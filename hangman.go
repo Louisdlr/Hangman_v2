@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// Charger les mots depuis un fichier texte
 func chargerMots(fichier string) []string {
 	file, err := os.Open(fichier)
 	if err != nil {
@@ -30,6 +31,8 @@ func chargerMots(fichier string) []string {
 
 	return mots
 }
+
+// Charger les étapes du pendu (images) depuis un fichier texte
 func chargerPendu(fichier string) []string {
 	file, err := os.Open(fichier)
 	if err != nil {
@@ -61,10 +64,14 @@ func chargerPendu(fichier string) []string {
 
 	return etapes
 }
+
+// Choisir un mot aléatoirement dans la liste
 func choisirMot(mots []string) string {
 	rand.Seed(time.Now().UnixNano())
 	return mots[rand.Intn(len(mots))]
 }
+
+// Révéler certaines lettres du mot dès le début
 func revelerLettres(mot string, n int) []rune {
 	motRevele := make([]rune, len(mot))
 	for i := range motRevele {
@@ -77,18 +84,28 @@ func revelerLettres(mot string, n int) []rune {
 	}
 	return motRevele
 }
+
+// Afficher le mot avec les lettres révélées et des espaces pour celles cachées
 func afficherMotRevele(motRevele []rune) string {
 	return strings.Join(strings.Split(string(motRevele), ""), " ")
 }
+
+// Afficher l'état du pendu à chaque étape
 func afficherPendu(etapes []string, nbEssais int) {
-	fmt.Println(etapes[6-nbEssais])
+	if nbEssais < 0 || nbEssais > 10 {
+		nbEssais = 0
+	}
+	fmt.Println(etapes[10-nbEssais])
 }
+
+// Gérer la logique du jeu du pendu
 func jouerPendu(mot string, etapes []string) {
-	nbEssais := 6
+	nbEssais := 10
 	motRevele := revelerLettres(mot, len(mot)/2-1)
 	lettresEssayees := make(map[rune]bool)
 
 	for nbEssais > 0 {
+		// Afficher le pendu et l'état actuel du mot
 		afficherPendu(etapes, nbEssais)
 		fmt.Println("Mot à deviner :", afficherMotRevele(motRevele))
 		fmt.Println("Essais restants :", nbEssais)
@@ -106,6 +123,8 @@ func jouerPendu(mot string, etapes []string) {
 			continue
 		}
 		lettresEssayees[char] = true
+
+		// Si la lettre est dans le mot
 		if strings.Contains(mot, lettre) {
 			fmt.Println("Bravo ! La lettre", lettre, "est dans le mot.")
 			for i, lettreMot := range mot {
@@ -117,14 +136,20 @@ func jouerPendu(mot string, etapes []string) {
 			fmt.Println("Dommage, la lettre", lettre, "n'est pas dans le mot.")
 			nbEssais--
 		}
+
+		// Si le joueur a trouvé le mot
 		if string(motRevele) == mot {
 			fmt.Println("Félicitations ! Vous avez trouvé le mot :", mot)
 			return
 		}
 	}
+
+	// Si le joueur a perdu
 	afficherPendu(etapes, 0)
 	fmt.Println("Désolé, vous avez perdu. Le mot était :", mot)
 }
+
+// Fonction principale
 func main() {
 	mots := chargerMots("words.txt")
 	etapes := chargerPendu("hangman.txt")
